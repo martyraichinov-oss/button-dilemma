@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Button Dilemma</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #C0392B;
+    --red-light: #FADBD8;
+    --red-dark: #922B21;
+    --blue: #1A5276;
+    --blue-light: #D6EAF8;
+    --blue-dark: #154360;
+    --bg: #0D0D0D;
+    --surface: #161616;
+    --surface2: #1E1E1E;
+    --text: #F0EDE8;
+    --muted: #888;
+    --border: rgba(255,255,255,0.08);
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .header {
+    text-align: center;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  .scenario {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #ccc;
+  }
+
+  .scenario strong { color: var(--text); font-weight: 500; }
+
+  .buttons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .vote-btn {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem 1rem;
+    border: 2px solid transparent;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    overflow: hidden;
+  }
+
+  .vote-btn:active { transform: scale(0.97); }
+
+  .vote-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    transition: opacity 0.2s;
+  }
+
+  .vote-btn:hover::before { opacity: 0.2; }
+
+  .btn-red {
+    background: #1a0a0a;
+    border-color: var(--red);
+  }
+
+  .btn-red::before { background: var(--red); }
+
+  .btn-blue {
+    background: #0a0f1a;
+    border-color: var(--blue);
+  }
+
+  .btn-blue::before { background: var(--blue); }
+
+  .btn-circle {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-red .btn-circle { background: var(--red); box-shadow: 0 0 20px rgba(192,57,43,0.4); }
+  .btn-blue .btn-circle { background: var(--blue); box-shadow: 0 0 20px rgba(26,82,118,0.4); }
+
+  .btn-label { position: relative; z-index: 1; font-weight: 500; font-size: 15px; }
+  .btn-sub { position: relative; z-index: 1; font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; }
+
+  .vote-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .result-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    display: none;
+    flex-direction: column;
+    gap: 1.25rem;
+    animation: fadeUp 0.35s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-panel.visible { display: flex; }
+
+  .result-headline {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .result-headline.red { color: #E74C3C; }
+  .result-headline.blue { color: #5DADE2; }
+
+  .vote-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .vote-bar-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .vote-bar-track {
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 99px;
+    overflow: hidden;
+    display: flex;
+  }
+
+  .bar-red {
+    background: var(--red);
+    height: 100%;
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  }
+
+  .bar-blue {
+    background: var(--blue);
+    height: 100%;
+    transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  }
+
+  .outcome-box {
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .outcome-box.survive {
+    background: rgba(39,174,96,0.1);
+    border: 1px solid rgba(39,174,96,0.3);
+    color: #58D68D;
+  }
+
+  .outcome-box.perish {
+    background: rgba(192,57,43,0.1);
+    border: 1px solid rgba(192,57,43,0.3);
+    color: #E74C3C;
+  }
+
+  .outcome-box.uncertain {
+    background: rgba(241,196,15,0.08);
+    border: 1px solid rgba(241,196,15,0.25);
+    color: #F4D03F;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .stat-card {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; text-transform: uppercase; }
+  .stat-value { font-size: 22px; font-weight: 500; }
+  .stat-value.red { color: #E74C3C; }
+  .stat-value.blue { color: #5DADE2; }
+
+  .reset-btn {
+    width: 100%;
+    padding: 0.85rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    margin-top: 0.25rem;
+  }
+
+  .reset-btn:hover { background: var(--surface2); color: var(--text); }
+
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1rem;
+  }
+
+  .your-vote-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-weight: 500;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  .your-vote-tag.red { background: rgba(192,57,43,0.2); color: #E74C3C; }
+  .your-vote-tag.blue { background: rgba(26,82,118,0.3); color: #5DADE2; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <p class="eyebrow">A thought experiment</p>
+    <h1>The Button<br>Dilemma</h1>
+  </div>
+
+  <div class="scenario">
+    Everyone in the world must take a <strong>private vote</strong> — press the red or blue button.<br><br>
+    <strong>If more than 50% press blue</strong> → everyone survives.<br>
+    <strong>If less than 50% press blue</strong> → only red-pressers survive.
+    <br><br>Which button do you press?
+  </div>
+
+  <div class="buttons-grid" id="buttonsGrid">
+    <button class="vote-btn btn-red" onclick="vote('red')">
+      <div class="btn-circle">&#128308;</div>
+      <span class="btn-label">Red Button</span>
+      <span class="btn-sub">Survive only if<br>blue fails (&lt;50%)</span>
+    </button>
+    <button class="vote-btn btn-blue" onclick="vote('blue')">
+      <div class="btn-circle">&#128309;</div>
+      <span class="btn-label">Blue Button</span>
+      <span class="btn-sub">Survive only if<br>blue wins (&gt;50%)</span>
+    </button>
+  </div>
+
+  <div class="result-panel" id="resultPanel">
+    <div class="result-headline" id="resultHeadline"></div>
+
+    <div class="vote-bar-wrap">
+      <div class="vote-bar-labels">
+        <span id="redPct">—% Red</span>
+        <span id="bluePct">—% Blue</span>
+      </div>
+      <div class="vote-bar-track">
+        <div class="bar-red" id="barRed" style="width:0%"></div>
+        <div class="bar-blue" id="barBlue" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">Red votes</span>
+        <span class="stat-value red" id="statRed">—</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Blue votes</span>
+        <span class="stat-value blue" id="statBlue">—</span>
+      </div>
+    </div>
+
+    <div class="outcome-box" id="outcomeBox"></div>
+
+    <button class="reset-btn" onclick="reset()">&#8635; Reset &amp; vote again</button>
+  </div>
+
+  <div class="footer">Votes are stored locally in your browser only.</div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'button_dilemma_votes';
+
+  function getVotes() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { red: 0, blue: 0 };
+    } catch { return { red: 0, blue: 0 }; }
+  }
+
+  function saveVotes(v) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
+  }
+
+  function vote(color) {
+    const votes = getVotes();
+    votes[color]++;
+    saveVotes(votes);
+
+    const btns = document.querySelectorAll('.vote-btn');
+    btns.forEach(b => b.disabled = true);
+
+    showResult(color, votes);
+  }
+
+  function showResult(myVote, votes) {
+    const total = votes.red + votes.blue;
+    const bluePct = total === 0 ? 0 : Math.round((votes.blue / total) * 100);
+    const redPct = 100 - bluePct;
+    const blueWins = bluePct > 50;
+
+    document.getElementById('barRed').style.width = redPct + '%';
+    document.getElementById('barBlue').style.width = bluePct + '%';
+    document.getElementById('redPct').textContent = redPct + '% Red';
+    document.getElementById('bluePct').textContent = bluePct + '% Blue';
+    document.getElementById('statRed').textContent = votes.red.toLocaleString();
+    document.getElementById('statBlue').textContent = votes.blue.toLocaleString();
+
+    const tag = `<span class="your-vote-tag ${myVote}">your vote</span>`;
+    const hl = document.getElementById('resultHeadline');
+
+    if (myVote === 'blue') {
+      hl.className = 'result-headline blue';
+      hl.innerHTML = 'You pressed blue.' + tag;
+    } else {
+      hl.className = 'result-headline red';
+      hl.innerHTML = 'You pressed red.' + tag;
+    }
+
+    const outcome = document.getElementById('outcomeBox');
+
+    if (blueWins && myVote === 'blue') {
+      outcome.className = 'outcome-box survive';
+      outcome.innerHTML = '<strong>You survive.</strong> Blue has ' + bluePct + '% of votes — the majority cooperated and everyone lives.';
+    } else if (!blueWins && myVote === 'red') {
+      outcome.className = 'outcome-box survive';
+      outcome.innerHTML = '<strong>You survive.</strong> Blue fell short at ' + bluePct + '% — you bet on defection and won.';
+    } else if (blueWins && myVote === 'red') {
+      outcome.className = 'outcome-box perish';
+      outcome.innerHTML = '<strong>You perish.</strong> Blue won with ' + bluePct + '% — the majority cooperated but you defected. Red-pressers don\'t survive.';
+    } else {
+      outcome.className = 'outcome-box perish';
+      outcome.innerHTML = '<strong>You perish.</strong> Blue collapsed at ' + bluePct + '% — cooperation failed. Only red-pressers survive, and that wasn\'t you.';
+    }
+
+    if (total === 1) {
+      outcome.className = 'outcome-box uncertain';
+      outcome.innerHTML = '<strong>You\'re the first vote.</strong> The outcome depends entirely on what comes next. Share this to find out.';
+    }
+
+    const panel = document.getElementById('resultPanel');
+    panel.style.display = 'flex';
+    setTimeout(() => panel.classList.add('visible'), 10);
+  }
+
+  function reset() {
+    document.querySelectorAll('.vote-btn').forEach(b => b.disabled = false);
+    const panel = document.getElementById('resultPanel');
+    panel.classList.remove('visible');
+    panel.style.display = 'none';
+    document.getElementById('barRed').style.width = '0%';
+    document.getElementById('barBlue').style.width = '0%';
+  }
+</script>
+</body>
+</html>

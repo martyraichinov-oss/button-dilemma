@@ -126,7 +126,7 @@
   <div class="scenario">
     Everyone in the world must take a <strong>private vote</strong> — press the red or blue button.<br><br>
     <strong>If more than 50% press blue</strong> → everyone survives.<br>
-    <strong>If less than 50% press blue</strong> → only red-pressers survive.
+    <strong>If more than 50% press red</strong> → everyone who pressed blue dies instantly. Everyone who pressed red survives.
     <br><br>Which button do you press?
   </div>
 
@@ -139,7 +139,7 @@
     <button class="vote-btn btn-red" onclick="vote('red')">
       <div class="btn-circle">&#128308;</div>
       <span class="btn-label">Red Button</span>
-      <span class="btn-sub">Survive only if<br>blue fails (&lt;50%)</span>
+      <span class="btn-sub">You survive if<br>red wins (&gt;50%)</span>
     </button>
     <button class="vote-btn btn-blue" onclick="vote('blue')">
       <div class="btn-circle">&#128309;</div>
